@@ -3,6 +3,12 @@
 
 name: Go
 
+on:
+  push:
+    branches: [ "main", "ci" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
 
   build:
