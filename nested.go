@@ -29,9 +29,9 @@
 //		elem.GetValue()
 //	}
 //
-// Eсть возможность инициализации структуры из JSON-строки и обратно с помощью [FromString] и [ToString]:
+// Eсть возможность инициализации структуры из JSON-строки и обратно с помощью [FromJSONString] и [ToJSONString]:
 //
-//	nested := FromString(`{"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}`)
+//	nested := FromJSONString(`{"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}`)
 //
 //	nested.GetValue("nested_object", "key1")
 //	nested.GetValue("nested_object", "key2")
@@ -40,7 +40,7 @@
 //		elem.GetValue()
 //	}
 //
-//	nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}
+//	nested.ToJSONString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}
 //
 // Для инициализации структуры словарем, массивом или значением-интерфейсом
 // и обратной конвертации в интерфейс см. [FromObject] и [ToObject].
@@ -765,11 +765,11 @@ func (j *Nested) ArrayDelete(f func(element *Nested) bool, keys ...string) error
 //
 // Примеры:
 //
-//	FromString("[[4, 5]").GetValue()  // "[[4, 5]"
-//	FromString("string").GetValue()   // "string"
-//	FromString("42").GetValue()       // 42
-//	FromString("true").GetValue()     // true
-func FromString(nested string) *Nested {
+//	FromJSONString("[[4, 5]").GetValue()  // "[[4, 5]"
+//	FromJSONString("string").GetValue()   // "string"
+//	FromJSONString("42").GetValue()       // 42
+//	FromJSONString("true").GetValue()     // true
+func FromJSONString(nested string) *Nested {
 	var kvObject map[string]any
 	if err := json.Unmarshal([]byte(nested), &kvObject); err == nil {
 		return FromObject(kvObject)
@@ -803,7 +803,7 @@ func FromString(nested string) *Nested {
 // Если объект не является массивом []any или словарем map[string]any,
 // он сохраняется как исходный тип интерфейса в объект-значение,
 // кроме float64. Для него производится попытка конвертации в int.
-// Это связано с тем, что функция используется в [FromString],
+// Это связано с тем, что функция используется в [FromJSONString],
 // где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из
 // пакета [ https://pkg.go.dev/encoding/json ], в котором все числа парсятся как float64.
 //
@@ -869,8 +869,8 @@ func FromObject(obj any) *Nested {
 //	nested.ArrayAddValue("elem1", "nested_array")
 //	nested.ArrayAddValue("elem2", "nested_array")
 //
-//	nested.ToString() // {"nested_array":["elem1","elem2"],"nested_object":{"key1":"value1","key2":"value2"}}
-func (j *Nested) ToString() string {
+//	nested.ToJSONString() // {"nested_array":["elem1","elem2"],"nested_object":{"key1":"value1","key2":"value2"}}
+func (j *Nested) ToJSONString() string {
 	// удаление лишних обрамляющих кавычек
 	trim := func(s string) string {
 		if len(s) >= 2 {

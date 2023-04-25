@@ -1343,7 +1343,7 @@ func Test_ArrayDelete(t *testing.T) {
 }
 
 func Test_FromObject(t *testing.T) {
-	// детальное использование тестируется в [Test_FromString].
+	// детальное использование тестируется в [Test_FromJSONString].
 	nested := FromObject(42)
 	assert.True(t, nested.IsValue())
 
@@ -1355,8 +1355,8 @@ func Test_FromObject(t *testing.T) {
 	assert.False(t, nested.IsEmpty())
 }
 
-func Test_FromString(t *testing.T) {
-	nested := FromString(`42`)
+func Test_FromJSONString(t *testing.T) {
+	nested := FromJSONString(`42`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1365,7 +1365,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`42.5`)
+	nested = FromJSONString(`42.5`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1374,7 +1374,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`string`)
+	nested = FromJSONString(`string`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1383,7 +1383,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`true`)
+	nested = FromJSONString(`true`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1392,7 +1392,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`[[4, 5]`)
+	nested = FromJSONString(`[[4, 5]`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1401,7 +1401,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`{"string3": skjhgdf}`)
+	nested = FromJSONString(`{"string3": skjhgdf}`)
 	assert.Equal(t,
 		&Nested{
 			isValue: true,
@@ -1410,7 +1410,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`{"str": "string", "number": 42}`)
+	nested = FromJSONString(`{"str": "string", "number": 42}`)
 	assert.Equal(t,
 		&Nested{
 			nested: map[string]*Nested{
@@ -1427,7 +1427,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`{"str": "string", "number": 1.5, "nested": {"str": "string2", "number": 2, "array": [7]}, "array": [3, "string3", [4, 5], {"number": 6}]}`)
+	nested = FromJSONString(`{"str": "string", "number": 1.5, "nested": {"str": "string2", "number": 2, "array": [7]}, "array": [3, "string3", [4, 5], {"number": 6}]}`)
 	assert.Equal(t,
 		&Nested{
 			nested: map[string]*Nested{
@@ -1499,7 +1499,7 @@ func Test_FromString(t *testing.T) {
 		nested,
 	)
 
-	nested = FromString(`[3, "string3", [4, 5], {"number": 6}]`)
+	nested = FromJSONString(`[3, "string3", [4, 5], {"number": 6}]`)
 	assert.Equal(t,
 		&Nested{
 			isArray: true,
@@ -1540,7 +1540,7 @@ func Test_FromString(t *testing.T) {
 }
 
 func Test_ToObject(t *testing.T) {
-	// детальное использование тестируется в [Test_ToString].
+	// детальное использование тестируется в [Test_ToJSONString].
 	nested := Nested{
 		isValue: true,
 		value:   42,
@@ -1592,7 +1592,7 @@ func Test_ToObject(t *testing.T) {
 	}
 }
 
-func Test_ToString(t *testing.T) {
+func Test_ToJSONString(t *testing.T) {
 	nested := Nested{
 		isValue: true,
 		value:   42,
@@ -1600,7 +1600,7 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		"42",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1610,7 +1610,7 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		"42.5",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1620,7 +1620,7 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		"true",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1630,21 +1630,21 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		"string",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{}
 
 	assert.Equal(t,
 		"{}",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{}
 	nested.SetArray([]*Nested{})
 	assert.Equal(t,
 		"[]",
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1660,10 +1660,10 @@ func Test_ToString(t *testing.T) {
 		},
 	}
 
-	nested = *FromString(`{"str": "string", "number": 42}`)
+	nested = *FromJSONString(`{"str": "string", "number": 42}`)
 	assert.Equal(t,
 		`{"number":42,"str":"string"}`,
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1736,7 +1736,7 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		`{"array":[3,"string3",[4,5],{"number":6}],"nested":{"array":[7],"number":2,"str":"string2"},"number":1.5,"str":"string"}`,
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 
 	nested = Nested{
@@ -1776,6 +1776,6 @@ func Test_ToString(t *testing.T) {
 
 	assert.Equal(t,
 		`[3,"string3",[4,5],{"number":6}]`,
-		nested.ToString(),
+		nested.ToJSONString(),
 	)
 }

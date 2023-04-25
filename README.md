@@ -37,10 +37,10 @@ for _, elem := range array {
 }
 ```
 
-Eсть возможность инициализации структуры из JSON\-строки и обратно с помощью \[FromString\] и \[ToString\]:
+Eсть возможность инициализации структуры из JSON\-строки и обратно с помощью \[FromJSONString\] и \[ToJSONString\]:
 
 ```
-nested := FromString(`{"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}`)
+nested := FromJSONString(`{"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}`)
 
 nested.GetValue("nested_object", "key1")
 nested.GetValue("nested_object", "key2")
@@ -49,7 +49,7 @@ for _, elem := range array {
 	elem.GetValue()
 }
 
-nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}
+nested.ToJSONString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "nested_array": ["elem1", "elem2"]}
 ```
 
 Для инициализации структуры словарем, массивом или значением\-интерфейсом и обратной конвертации в интерфейс см. \[FromObject\] и \[ToObject\].
@@ -58,7 +58,7 @@ nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "ne
 
 - [type Nested](<#type-nested>)
   - [func FromObject(obj any) *Nested](<#func-fromobject>)
-  - [func FromString(nested string) *Nested](<#func-fromstring>)
+  - [func FromJSONString(nested string) *Nested](<#func-FromJSONString>)
   - [func (j *Nested) ArrayAdd(element *Nested, keys ...string) error](<#func-nested-arrayadd>)
   - [func (j *Nested) ArrayAddArray(element []*Nested, keys ...string) error](<#func-nested-arrayaddarray>)
   - [func (j *Nested) ArrayAddValue(element any, keys ...string) error](<#func-nested-arrayaddvalue>)
@@ -81,7 +81,7 @@ nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "ne
   - [func (j *Nested) SetMap(nested map[string]*Nested, keys ...string) error](<#func-nested-setmap>)
   - [func (j *Nested) SetValue(value any, keys ...string) error](<#func-nested-setvalue>)
   - [func (j *Nested) ToObject() any](<#func-nested-toobject>)
-  - [func (j *Nested) ToString() string](<#func-nested-tostring>)
+  - [func (j *Nested) ToJSONString() string](<#func-nested-ToJSONString>)
 
 
 ## type [Nested](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L67-L75>)
@@ -110,7 +110,7 @@ func FromObject(obj any) *Nested
 
 Вложенные словари могут быть вида map\[string\]any. Если ключи словаря имеют другой тип, словарь сохранится как объект\-значение.
 
-Если объект не является массивом \[\]any или словарем map\[string\]any, он сохраняется как исходный тип интерфейса в объект\-значение, кроме float64. Для него производится попытка конвертации в int. Это связано с тем, что функция используется в \[FromString\], где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из пакета \[ https://pkg.go.dev/encoding/json \], в котором все числа парсятся как float64.
+Если объект не является массивом \[\]any или словарем map\[string\]any, он сохраняется как исходный тип интерфейса в объект\-значение, кроме float64. Для него производится попытка конвертации в int. Это связано с тем, что функция используется в \[FromJSONString\], где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из пакета \[ https://pkg.go.dev/encoding/json \], в котором все числа парсятся как float64.
 
 Примеры:
 
@@ -126,10 +126,10 @@ nested = FromObject(42)
 nested.IsValue() // true
 ```
 
-### func [FromString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L772>)
+### func [FromJSONString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L772>)
 
 ```go
-func FromString(nested string) *Nested
+func FromJSONString(nested string) *Nested
 ```
 
 Создание объекта из JSON\-строки.
@@ -141,10 +141,10 @@ func FromString(nested string) *Nested
 Примеры:
 
 ```
-FromString("[[4, 5]").GetValue()  // "[[4, 5]"
-FromString("string").GetValue()   // "string"
-FromString("42").GetValue()       // 42
-FromString("true").GetValue()     // true
+FromJSONString("[[4, 5]").GetValue()  // "[[4, 5]"
+FromJSONString("string").GetValue()   // "string"
+FromJSONString("42").GetValue()       // 42
+FromJSONString("true").GetValue()     // true
 ```
 
 ### func \(\*Nested\) [ArrayAdd](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L475>)
@@ -569,10 +569,10 @@ nested.ArrayAddValue("elem2", "nested_array")
 nested.ToObject()
 ```
 
-### func \(\*Nested\) [ToString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L873>)
+### func \(\*Nested\) [ToJSONString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L873>)
 
 ```go
-func (j *Nested) ToString() string
+func (j *Nested) ToJSONString() string
 ```
 
 Конвертация объекта в JSON\-строку.
@@ -590,5 +590,5 @@ nested.SetArray([]*Nested{}, "nested_array")
 nested.ArrayAddValue("elem1", "nested_array")
 nested.ArrayAddValue("elem2", "nested_array")
 
-nested.ToString() // {"nested_array":["elem1","elem2"],"nested_object":{"key1":"value1","key2":"value2"}}
+nested.ToJSONString() // {"nested_array":["elem1","elem2"],"nested_object":{"key1":"value1","key2":"value2"}}
 ```
