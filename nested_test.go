@@ -445,6 +445,115 @@ func Test_SetValue(t *testing.T) {
 	}
 }
 
+func Test_GetMap(t *testing.T) {
+	nested := testNested()
+
+	_, err := nested.GetMap("somekey")
+	assert.EqualError(t, err, "key 'somekey' not found")
+
+	_, err = nested.GetMap("nested", "somekey")
+	assert.EqualError(t, err, "nested: key 'somekey' not found")
+
+	_, err = nested.GetMap("value")
+	assert.EqualError(t, err, "value: is value")
+
+	_, err = nested.GetMap("array")
+	assert.EqualError(t, err, "array: is array")
+
+	obj, err := nested.GetMap()
+	if assert.Nil(t, err) {
+		assert.Equal(t, nested.nested, obj)
+	}
+
+	obj, err = nested.GetMap("nested")
+	if assert.Nil(t, err) {
+		assert.Equal(t, nested.nested["nested"].nested, obj)
+	}
+
+	_, err = nested.GetMap("nested", "array")
+	assert.EqualError(t, err, "nested.array: is array")
+
+	_, err = nested.GetMap("nested", "nested", "somekey")
+	assert.EqualError(t, err, "nested.nested: key 'somekey' not found")
+
+	obj, err = nested.GetMap("nested", "nested")
+	if assert.Nil(t, err) {
+		assert.Equal(t, nested.nested["nested"].nested["nested"].nested, obj)
+	}
+
+	nested = Nested{
+		isValue: true,
+		value:   42,
+	}
+
+	_, err = nested.GetMap()
+	assert.EqualError(t, err, "is value")
+
+	nested = Nested{
+		isArray: true,
+		array: []*Nested{
+			{
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in nested array",
+					},
+				},
+			},
+		},
+	}
+
+	_, err = nested.GetMap()
+	assert.EqualError(t, err, "is array")
+
+	nested = Nested{}
+
+	obj, err = nested.GetMap()
+	if assert.Nil(t, err) {
+		for range obj {
+			assert.Fail(t, "must be empty")
+		}
+	}
+}
+
+func Test_SetMap(t *testing.T) {
+	nested := testNested()
+
+	obj := map[string]*Nested{
+		"one": {
+			isValue: true,
+			value:   42,
+		},
+		"two": {
+			isValue: true,
+			value:   43,
+		},
+	}
+
+	err := nested.SetMap(obj, "array", "somekey")
+	assert.EqualError(t, err, "array: is array")
+
+	err = nested.SetMap(obj, "nested", "nested", "value", "somekey")
+	assert.EqualError(t, err, "nested.nested.value: is value")
+
+	err = nested.SetMap(obj, "nested", "somekey")
+	if assert.Nil(t, err) {
+		assert.Equal(t, obj, nested.nested["nested"].nested["somekey"].nested)
+	}
+
+	err = nested.SetMap(obj, "nested", "nested", "somekey")
+	if assert.Nil(t, err) {
+		assert.Equal(t, obj, nested.nested["nested"].nested["nested"].nested["somekey"].nested)
+	}
+
+	nested = Nested{}
+
+	err = nested.SetMap(obj)
+	if assert.Nil(t, err) {
+		assert.Equal(t, obj, nested.nested)
+	}
+}
+
 func Test_GetArray(t *testing.T) {
 	nested := testNested()
 

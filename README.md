@@ -8,7 +8,7 @@ import "github.com/NGRsoftlab/ngr-nested"
 
 Используются как альтернатива словарям с динамической типизацией для реализации работы с JSON\-объектами.
 
-Не являются конкурентно-безопасными, для добавления этой возможности надо делать отдельную обертку.
+Не являются конкурентно\-безопасными, для добавления этой возможности надо делать обертку.
 
 Пример использования для создания и чтения объекта:
 
@@ -69,6 +69,7 @@ nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "ne
   - [func (j *Nested) Delete(keys ...string) error](<#func-nested-delete>)
   - [func (j *Nested) Get(keys ...string) (*Nested, error)](<#func-nested-get>)
   - [func (j *Nested) GetArray(keys ...string) ([]*Nested, error)](<#func-nested-getarray>)
+  - [func (j *Nested) GetMap(keys ...string) (map[string]*Nested, error)](<#func-nested-getmap>)
   - [func (j *Nested) GetValue(keys ...string) (any, error)](<#func-nested-getvalue>)
   - [func (j *Nested) IsArray() bool](<#func-nested-isarray>)
   - [func (j *Nested) IsEmpty() bool](<#func-nested-isempty>)
@@ -77,12 +78,13 @@ nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "ne
   - [func (j *Nested) Length() int](<#func-nested-length>)
   - [func (j *Nested) Set(nested *Nested, keys ...string) error](<#func-nested-set>)
   - [func (j *Nested) SetArray(array []*Nested, keys ...string) error](<#func-nested-setarray>)
+  - [func (j *Nested) SetMap(nested map[string]*Nested, keys ...string) error](<#func-nested-setmap>)
   - [func (j *Nested) SetValue(value any, keys ...string) error](<#func-nested-setvalue>)
   - [func (j *Nested) ToObject() any](<#func-nested-toobject>)
   - [func (j *Nested) ToString() string](<#func-nested-tostring>)
 
 
-## type [Nested](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L65-L73>)
+## type [Nested](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L67-L75>)
 
 Структура для описания объекта.
 
@@ -94,17 +96,11 @@ nested.ToString() // {"nested_object": {"key1": "value1", "key2": "value2"}, "ne
 
 ```go
 type Nested struct {
-    isValue bool // является ли объект скалярным значением
-    isArray bool // является ли объект массивом
-
-    nested map[string]*Nested // вложенный объект вида ключ-значение
-    array  []*Nested          // массив объектов
-
-    value any // скалярное значение
+    // contains filtered or unexported fields
 }
 ```
 
-### func [FromObject](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L761>)
+### func [FromObject](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L821>)
 
 ```go
 func FromObject(obj any) *Nested
@@ -114,7 +110,7 @@ func FromObject(obj any) *Nested
 
 Вложенные словари могут быть вида map\[string\]any. Если ключи словаря имеют другой тип, словарь сохранится как объект\-значение.
 
-Если объект не является массивом \[\]any или словарем map\[string\]any, он сохраняется как исходный тип интерфейса в объект\-значение, кроме float64. Для него производится попытка конвертации в int. Это связано с тем, что функция используется в \[FromString\], где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из пакета \[https://pkg.go.dev/encoding/json\], в котором все числа парсятся как float64.
+Если объект не является массивом \[\]any или словарем map\[string\]any, он сохраняется как исходный тип интерфейса в объект\-значение, кроме float64. Для него производится попытка конвертации в int. Это связано с тем, что функция используется в \[FromString\], где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из пакета \[ https://pkg.go.dev/encoding/json \], в котором все числа парсятся как float64.
 
 Примеры:
 
@@ -130,7 +126,7 @@ nested = FromObject(42)
 nested.IsValue() // true
 ```
 
-### func [FromString](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L712>)
+### func [FromString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L772>)
 
 ```go
 func FromString(nested string) *Nested
@@ -151,7 +147,7 @@ FromString("42").GetValue()       // 42
 FromString("true").GetValue()     // true
 ```
 
-### func \(\*Nested\) [ArrayAdd](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L415>)
+### func \(\*Nested\) [ArrayAdd](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L475>)
 
 ```go
 func (j *Nested) ArrayAdd(element *Nested, keys ...string) error
@@ -163,7 +159,7 @@ func (j *Nested) ArrayAdd(element *Nested, keys ...string) error
 
 Если один из вложенных объектов в цепочке является массивом или значением, функция вернет ошибку. Последний объект в цепочке должен быть массивом. Исходный объект может являться массивом, если не передана цепочка ключей.
 
-### func \(\*Nested\) [ArrayAddArray](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L477>)
+### func \(\*Nested\) [ArrayAddArray](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L537>)
 
 ```go
 func (j *Nested) ArrayAddArray(element []*Nested, keys ...string) error
@@ -175,7 +171,7 @@ func (j *Nested) ArrayAddArray(element []*Nested, keys ...string) error
 
 Если один из вложенных объектов в цепочке является массивом или значением, функция вернет ошибку. Последний объект в цепочке должен быть массивом. Исходный объект может являться массивом, если не передана цепочка ключей.
 
-### func \(\*Nested\) [ArrayAddValue](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L460>)
+### func \(\*Nested\) [ArrayAddValue](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L520>)
 
 ```go
 func (j *Nested) ArrayAddValue(element any, keys ...string) error
@@ -187,7 +183,7 @@ func (j *Nested) ArrayAddValue(element any, keys ...string) error
 
 Если один из вложенных объектов в цепочке является массивом или значением, функция вернет ошибку. Последний объект в цепочке должен быть массивом. Исходный объект может являться массивом, если не передана цепочка ключей.
 
-### func \(\*Nested\) [ArrayDelete](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L684>)
+### func \(\*Nested\) [ArrayDelete](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L744>)
 
 ```go
 func (j *Nested) ArrayDelete(f func(element *Nested) bool, keys ...string) error
@@ -219,7 +215,7 @@ nested.ArrayDelete(
 nested.GetArray() // []*Nested{{}}, nil
 ```
 
-### func \(\*Nested\) [ArrayFindAll](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L557>)
+### func \(\*Nested\) [ArrayFindAll](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L617>)
 
 ```go
 func (j *Nested) ArrayFindAll(f func(*Nested) bool, keys ...string) ([]*Nested, error)
@@ -298,7 +294,7 @@ array, _ := nested.ArrayFindOne(
 array[0].GetValue() // 142, nil
 ```
 
-### func \(\*Nested\) [ArrayFindOne](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L643>)
+### func \(\*Nested\) [ArrayFindOne](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L703>)
 
 ```go
 func (j *Nested) ArrayFindOne(f func(element *Nested) bool, keys ...string) (*Nested, error)
@@ -376,7 +372,7 @@ value, _ := nested.ArrayFindOne(
 value.GetValue() // 42, nil
 ```
 
-### func \(\*Nested\) [Clear](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L116>)
+### func \(\*Nested\) [Clear](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L118>)
 
 ```go
 func (j *Nested) Clear() error
@@ -386,7 +382,7 @@ func (j *Nested) Clear() error
 
 Следует учитывать, что внутри структуры используются указатели. Если структура была инициализирована указателями на внешние объекты, они тоже могут стать недоступны.
 
-### func \(\*Nested\) [Delete](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L370>)
+### func \(\*Nested\) [Delete](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L430>)
 
 ```go
 func (j *Nested) Delete(keys ...string) error
@@ -400,7 +396,7 @@ func (j *Nested) Delete(keys ...string) error
 
 Если последний ключ в цепочке отсутствует, функция завершится без ошибок.
 
-### func \(\*Nested\) [Get](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L149>)
+### func \(\*Nested\) [Get](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L151>)
 
 ```go
 func (j *Nested) Get(keys ...string) (*Nested, error)
@@ -412,7 +408,7 @@ func (j *Nested) Get(keys ...string) (*Nested, error)
 
 Если исходный или один из промежуточных объектов является массивом или значением, функция вернет ошибку.
 
-### func \(\*Nested\) [GetArray](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L303>)
+### func \(\*Nested\) [GetArray](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L363>)
 
 ```go
 func (j *Nested) GetArray(keys ...string) ([]*Nested, error)
@@ -422,7 +418,19 @@ func (j *Nested) GetArray(keys ...string) ([]*Nested, error)
 
 Все вложенные объекты до последнего в цепочке должны быть вида ключ\-значение. Последний \- массивом. Можно не передавать ключи, тогда исходный объект должен быть массивом.
 
-### func \(\*Nested\) [GetValue](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L240>)
+### func \(\*Nested\) [GetMap](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L306>)
+
+```go
+func (j *Nested) GetMap(keys ...string) (map[string]*Nested, error)
+```
+
+Получение вложенного объекта вида ключ\-значение \(map\) по цепочке ключей.
+
+Если отсутствует один из промежуточных ключей, вернется ошибка.
+
+Если один из объектов в цепочке является массивом или значением, функция вернет ошибку.
+
+### func \(\*Nested\) [GetValue](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L242>)
 
 ```go
 func (j *Nested) GetValue(keys ...string) (any, error)
@@ -432,7 +440,7 @@ func (j *Nested) GetValue(keys ...string) (any, error)
 
 Все вложенные объекты до последнего в цепочке должны быть вида ключ\-значение. Последний \- скалярным значением. Можно не передавать ключи, тогда исходный объект должен быть значением.
 
-### func \(\*Nested\) [IsArray](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L76>)
+### func \(\*Nested\) [IsArray](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L78>)
 
 ```go
 func (j *Nested) IsArray() bool
@@ -440,7 +448,7 @@ func (j *Nested) IsArray() bool
 
 Проверка, является ли объект массивом.
 
-### func \(\*Nested\) [IsEmpty](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L91>)
+### func \(\*Nested\) [IsEmpty](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L93>)
 
 ```go
 func (j *Nested) IsEmpty() bool
@@ -448,7 +456,7 @@ func (j *Nested) IsEmpty() bool
 
 Проверка, что объект пустой и имеет вид ключ\-значение.
 
-### func \(\*Nested\) [IsNested](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L86>)
+### func \(\*Nested\) [IsNested](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L88>)
 
 ```go
 func (j *Nested) IsNested() bool
@@ -456,7 +464,7 @@ func (j *Nested) IsNested() bool
 
 Проверка, что объект имеет тип ключ\-значение.
 
-### func \(\*Nested\) [IsValue](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L81>)
+### func \(\*Nested\) [IsValue](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L83>)
 
 ```go
 func (j *Nested) IsValue() bool
@@ -464,7 +472,7 @@ func (j *Nested) IsValue() bool
 
 Проверка, является ли объект скалярным значением.
 
-### func \(\*Nested\) [Length](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L100>)
+### func \(\*Nested\) [Length](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L102>)
 
 ```go
 func (j *Nested) Length() int
@@ -474,7 +482,7 @@ func (j *Nested) Length() int
 
 Для массива \- количество элементов. Для объекта ключ\-значение \- количество ключей. Для скалярного значения \- \-1.
 
-### func \(\*Nested\) [Set](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L195>)
+### func \(\*Nested\) [Set](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L197>)
 
 ```go
 func (j *Nested) Set(nested *Nested, keys ...string) error
@@ -488,7 +496,7 @@ func (j *Nested) Set(nested *Nested, keys ...string) error
 
 Функция принимает указатель на сохраняемый объект. Если в дальнейшем изменится исходный объект, изменится и вложенный.
 
-### func \(\*Nested\) [SetArray](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L347>)
+### func \(\*Nested\) [SetArray](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L407>)
 
 ```go
 func (j *Nested) SetArray(array []*Nested, keys ...string) error
@@ -502,7 +510,23 @@ func (j *Nested) SetArray(array []*Nested, keys ...string) error
 
 Также можно не передавать цепочку ключей, если исходный объект является пустым \(IsEmpty\). В этом случае он станет объектом\-массивом.
 
-### func \(\*Nested\) [SetValue](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L284>)
+### func \(\*Nested\) [SetMap](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L346>)
+
+```go
+func (j *Nested) SetMap(nested map[string]*Nested, keys ...string) error
+```
+
+Сохранение map\-объекта типа map\[string\]\*Nested по цепочке ключей.
+
+Если отсутствует промежуточный ключ, для него и для всех остальных ключей в цепочек будут созданы новые вложенные объекты.
+
+Если один из вложенных объектов в цепочке является массивом или значением, функция вернет ошибку.
+
+Также можно не передавать цепочку ключей, если исходный объект является пустым \(IsEmpty\). В этом случае он станет объектом\-значением.
+
+Если исходный объект непустой, удаление старых элементов не производится, и указатели на них останутся корректными.
+
+### func \(\*Nested\) [SetValue](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L286>)
 
 ```go
 func (j *Nested) SetValue(value any, keys ...string) error
@@ -516,7 +540,7 @@ func (j *Nested) SetValue(value any, keys ...string) error
 
 Также можно не передавать цепочку ключей, если исходный объект является пустым \(IsEmpty\). В этом случае он станет объектом\-значением.
 
-### func \(\*Nested\) [ToObject](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L853>)
+### func \(\*Nested\) [ToObject](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L913>)
 
 ```go
 func (j *Nested) ToObject() any
@@ -545,7 +569,7 @@ nested.ArrayAddValue("elem2", "nested_array")
 nested.ToObject()
 ```
 
-### func \(\*Nested\) [ToString](<https://github.com/NGRsoftlab/ngr-nested/blob/main/nested.go#L813>)
+### func \(\*Nested\) [ToString](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L873>)
 
 ```go
 func (j *Nested) ToString() string
