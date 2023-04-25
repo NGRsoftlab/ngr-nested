@@ -2,7 +2,7 @@
 //
 // Используются как альтернатива словарям с динамической типизацией для реализации работы с JSON-объектами.
 //
-// Не являются конкурентно-безопасными, для добавления этой возможности надо делать отдельную обертку.
+// Не являются конкурентно-безопасными, для добавления этой возможности надо делать обертку.
 //
 // Пример использования для создания и чтения объекта:
 //
@@ -294,6 +294,64 @@ func (j *Nested) SetValue(value any, keys ...string) error {
 	return j.Set(&Nested{
 		isValue: true,
 		value:   value,
+	},
+		keys...)
+}
+
+// Получение вложенного объекта вида ключ-значение (map) по цепочке ключей.
+//
+// Если отсутствует один из промежуточных ключей, вернется ошибка.
+//
+// Если один из объектов в цепочке является массивом или значением, функция вернет ошибку.
+func (j *Nested) GetMap(keys ...string) (map[string]*Nested, error) {
+	if j.IsValue() {
+		return nil, fmt.Errorf("is value")
+	}
+
+	if j.IsArray() {
+		return nil, fmt.Errorf("is array")
+	}
+
+	if len(keys) == 0 {
+		return j.nested, nil
+	}
+
+	nested, err := j.Get(keys...)
+	if err != nil {
+		return nil, err
+	}
+
+	if nested.IsValue() {
+		return nil, fmt.Errorf("%s: is value", strings.Join(keys[:], "."))
+	}
+
+	if nested.IsArray() {
+		return nil, fmt.Errorf("%s: is array", strings.Join(keys[:], "."))
+	}
+
+	return nested.nested, nil
+}
+
+// Сохранение map-объекта типа map[string]*Nested по цепочке ключей.
+//
+// Если отсутствует промежуточный ключ, для него и для всех остальных ключей в цепочек
+// будут созданы новые вложенные объекты.
+//
+// Если один из вложенных объектов в цепочке является массивом или значением, функция вернет ошибку.
+//
+// Также можно не передавать цепочку ключей, если исходный объект является пустым (IsEmpty).
+// В этом случае он станет объектом-значением.
+//
+// Если исходный объект непустой, удаление старых элементов не производится, и указатели на них останутся корректными.
+func (j *Nested) SetMap(nested map[string]*Nested, keys ...string) error {
+	if (j.IsEmpty() || j.IsNested()) && len(keys) == 0 {
+		j.nested = nested
+
+		return nil
+	}
+
+	return j.Set(&Nested{
+		nested: nested,
 	},
 		keys...)
 }
@@ -747,7 +805,7 @@ func FromString(nested string) *Nested {
 // кроме float64. Для него производится попытка конвертации в int.
 // Это связано с тем, что функция используется в [FromString],
 // где в свою очередь для парсинга строки с объектом или массивом используется Unmarshal из
-// пакета [https://pkg.go.dev/encoding/json], в котором все числа парсятся как float64.
+// пакета [ https://pkg.go.dev/encoding/json ], в котором все числа парсятся как float64.
 //
 // Примеры:
 //
