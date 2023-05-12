@@ -396,6 +396,8 @@ func (j *Nested) Delete(keys ...string) error
 
 Если последний ключ в цепочке отсутствует, функция завершится без ошибок.
 
+Функцию также следует использовать для проверки наличия ключа в объекте через сравнение с nil возвращенного указателя или ошибки.
+
 ### func \(\*Nested\) [Get](<https://github.com/NGRsoftlab/ngr-nested/blob/master/nested.go#L151>)
 
 ```go
