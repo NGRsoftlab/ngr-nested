@@ -1660,9 +1660,9 @@ func Test_ToJSONString(t *testing.T) {
 		},
 	}
 
-	nested = *FromJSONString(`{"str": "string", "number": 42}`)
+	nested = *FromJSONString(`{"str": "string<&>", "number": 42}`)
 	assert.Equal(t,
-		`{"number":42,"str":"string"}`,
+		`{"number":42,"str":"string<&>"}`,
 		nested.ToJSONString(),
 	)
 

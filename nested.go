@@ -47,6 +47,7 @@
 package nested
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -875,17 +876,31 @@ func FromObject(obj any) *Nested {
 func (j *Nested) ToJSONString() string {
 	// удаление лишних обрамляющих кавычек
 	trim := func(s string) string {
+		if s[len(s)-1] == '\n' {
+			s = s[0 : len(s)-1]
+		}
+
 		if len(s) >= 2 {
 			if s[0] == '"' && s[len(s)-1] == '"' {
-				return s[1 : len(s)-1]
+				s = s[1 : len(s)-1]
 			}
 		}
+
 		return s
 	}
 
 	result := ""
 
-	if objString, err := json.Marshal(j.ToObject()); err == nil {
+	// отключение экранирования спецсимволов
+	jsonMarshal := func(t interface{}) ([]byte, error) {
+		buffer := &bytes.Buffer{}
+		encoder := json.NewEncoder(buffer)
+		encoder.SetEscapeHTML(false)
+		err := encoder.Encode(t)
+		return buffer.Bytes(), err
+	}
+
+	if objString, err := jsonMarshal(j.ToObject()); err == nil {
 		result = trim(string(objString))
 	}
 
