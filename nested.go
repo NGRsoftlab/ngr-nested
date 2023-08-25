@@ -962,7 +962,7 @@ func (j *Nested) ToObject() any {
 //
 //	var a Nested = Nested{isValue: true, value: int(5)}.
 //	var b Nested = Nested{isValue: true, value: uint64(5)}.
-//	Equals(&a, &b) вернет false, так как переменные имеют разный тип данных.
+//	// Equals(&a, &b) вернет false, так как переменные имеют разный тип данных.
 //
 //	var a Nested = Nested{
 //		isArray: true,
@@ -1006,7 +1006,7 @@ func (j *Nested) ToObject() any {
 //			},
 //		},
 //	}
-//	Equals(&a, &b) вернет false, так как важен порядок элементов в массиве.
+//	// Equals(&a, &b) вернет false, так как важен порядок элементов в массиве.
 func Equals(a, b *Nested) bool {
 	return reflect.DeepEqual(a.ToObject(), b.ToObject())
 }

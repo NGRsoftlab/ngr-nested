@@ -103,7 +103,7 @@ func Equals(a, b *Nested) bool
 ```
 var a Nested = Nested{isValue: true, value: int(5)}.
 var b Nested = Nested{isValue: true, value: uint64(5)}.
-Equals(&a, &b) вернет false, так как переменные имеют разный тип данных.
+// Equals(&a, &b) вернет false, так как переменные имеют разный тип данных.
 
 var a Nested = Nested{
 	isArray: true,
@@ -147,7 +147,7 @@ var b Nested = Nested{
 		},
 	},
 }
-Equals(&a, &b) вернет false, так как важен порядок элементов в массиве.
+// Equals(&a, &b) вернет false, так как важен порядок элементов в массиве.
 ```
 
 <a name="Nested"></a>
