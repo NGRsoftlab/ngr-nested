@@ -50,6 +50,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -949,4 +950,63 @@ func (j *Nested) ToObject() any {
 	}
 
 	return result
+}
+
+// Функция для сравнения двух объектов Nested.
+//
+// Возвращает true, если объекты равны, в противном случае false.
+// При сравнении учитываются не только сами значения, но и типы данных объекта.
+// Также, если элементы содержатся в массиве, важен порядок их расположения, то есть в соответствующих индексах массива должны быть равные элементы.
+//
+// Пример:
+//
+//	var a Nested = Nested{isValue: true, value: int(5)}.
+//	var b Nested = Nested{isValue: true, value: uint64(5)}.
+//	// Equals(&a, &b) вернет false, так как переменные имеют разный тип данных.
+//
+//	var a Nested = Nested{
+//		isArray: true,
+//		array: []*Nested{
+//			{
+//				nested: map[string]*Nested{
+//					"nested_value": {
+//						isValue: true,
+//						value:   "string in nested array",
+//					},
+//				},
+//			},
+//			{
+//				nested: map[string]*Nested{
+//					"super value": {
+//						isValue: true,
+//						value:   "string in nested array",
+//					},
+//				},
+//			},
+//		},
+//	}
+//	var b Nested = Nested{
+//		isArray: true,
+//		array: []*Nested{
+//			{
+//				nested: map[string]*Nested{
+//					"super value": {
+//						isValue: true,
+//						value:   "string in nested array",
+//					},
+//				},
+//			},
+//			{
+//				nested: map[string]*Nested{
+//					"nested_value": {
+//						isValue: true,
+//						value:   "string in nested array",
+//					},
+//				},
+//			},
+//		},
+//	}
+//	// Equals(&a, &b) вернет false, так как важен порядок элементов в массиве.
+func Equals(a, b *Nested) bool {
+	return reflect.DeepEqual(a.ToObject(), b.ToObject())
 }

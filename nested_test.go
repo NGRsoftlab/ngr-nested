@@ -1779,3 +1779,583 @@ func Test_ToJSONString(t *testing.T) {
 		nested.ToJSONString(),
 	)
 }
+
+func Test_Equals(t *testing.T) {
+	tests := []struct {
+		a        Nested
+		b        Nested
+		expected bool
+	}{
+		{
+			a: Nested{
+				isArray: false,
+				isValue: true,
+				value:   5,
+			},
+			b: Nested{
+				isValue: true,
+				value:   5,
+			},
+			expected: true,
+		},
+		{
+			a: Nested{
+				isArray: false,
+				isValue: true,
+				value:   int(7),
+			},
+			b: Nested{
+				isArray: false,
+				isValue: true,
+				value:   uint64(7),
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				isArray: false,
+				isValue: true,
+				value:   float32(110.137),
+			},
+			b: Nested{
+				isArray: false,
+				isValue: true,
+				value:   float64(110.137),
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				isValue: true,
+				value: map[string]interface{}{
+					"key":         "value",
+					"some_nested": "some value",
+				},
+			},
+			b: Nested{
+				isValue: true,
+				value: map[string]interface{}{
+					"key":         "value",
+					"some_nested": "some value",
+				},
+			},
+			expected: true,
+		},
+		{
+			a: Nested{
+				isValue: true,
+				value: map[string]interface{}{
+					"key":         "value",
+					"some_nested": "some value",
+				},
+			},
+			b: Nested{
+				isValue: true,
+				value: map[string][]string{
+					"nested_array": {"elem1", "elem2"},
+				},
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				isArray: true,
+				array: []*Nested{
+					{
+						nested: map[string]*Nested{
+							"nested_value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+					{
+						nested: map[string]*Nested{
+							"super value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				isArray: true,
+				array: []*Nested{
+					{
+						nested: map[string]*Nested{
+							"nested_value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+					{
+						nested: map[string]*Nested{
+							"super value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			a: Nested{
+				isArray: true,
+				array: []*Nested{
+					{
+						nested: map[string]*Nested{
+							"nested_value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+					{
+						nested: map[string]*Nested{
+							"super value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				isArray: true,
+				array: []*Nested{
+					{
+						nested: map[string]*Nested{
+							"super value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+					{
+						nested: map[string]*Nested{
+							"nested_value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			a: Nested{
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				isArray: true,
+				isValue: true,
+				value:   "Some value",
+				array: []*Nested{
+					{
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   "string in nested array",
+							},
+						},
+					},
+				},
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				isValue: true,
+				value: map[string]interface{}{
+					"key1": 50,
+				},
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				isValue: true,
+				value: map[string]interface{}{
+					"key1": 50,
+					"key2": map[string]string{
+						"innne_key1": "inner_value1",
+					},
+					"key3": complex(10, 15),
+				},
+				nested: map[string]*Nested{
+					"value": {
+						isValue: true,
+						value:   "string in new nested",
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"value": {
+								isValue: true,
+								value:   1042,
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			a: Nested{
+				nested: map[string]*Nested{
+					"number": {
+						isValue: true,
+						value:   1.5,
+					},
+					"str": {
+						isValue: true,
+						value:   "string",
+					},
+					"array": {
+						isArray: true,
+						array: []*Nested{
+							{
+								isValue: true,
+								value:   3,
+							},
+							{
+								isValue: true,
+								value:   "string3",
+							},
+							{
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   4,
+									},
+									{
+										isValue: true,
+										value:   5,
+									},
+								},
+							},
+							{
+								nested: map[string]*Nested{
+									"number": {
+										isValue: true,
+										value:   6,
+									},
+								},
+							},
+						},
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"str": {
+								isValue: true,
+								value:   "string2",
+							},
+							"number": {
+								isValue: true,
+								value:   2,
+							},
+							"array": {
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				nested: map[string]*Nested{
+					"number": {
+						isValue: true,
+						value:   1.5,
+					},
+					"str": {
+						isValue: true,
+						value:   "string",
+					},
+					"array": {
+						isArray: true,
+						array: []*Nested{
+							{
+								isValue: true,
+								value:   3,
+							},
+							{
+								isValue: true,
+								value:   "string3",
+							},
+							{
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   4,
+									},
+									{
+										isValue: true,
+										value:   5,
+									},
+								},
+							},
+							{
+								nested: map[string]*Nested{
+									"number": {
+										isValue: true,
+										value:   6,
+									},
+								},
+							},
+						},
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"str": {
+								isValue: true,
+								value:   "string2",
+							},
+							"number": {
+								isValue: true,
+								value:   2,
+							},
+							"array": {
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			a: Nested{
+				nested: map[string]*Nested{
+					"number": {
+						isValue: true,
+						value:   1.5,
+					},
+					"str": {
+						isValue: true,
+						value:   "string",
+					},
+					"array": {
+						isArray: true,
+						array: []*Nested{
+							{
+								isValue: true,
+								value:   3,
+							},
+							{
+								isValue: true,
+								value:   "string3",
+							},
+							{
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   4,
+									},
+									{
+										isValue: true,
+										value:   5,
+									},
+								},
+							},
+							{
+								nested: map[string]*Nested{
+									"number": {
+										isValue: true,
+										value:   6,
+									},
+								},
+							},
+						},
+					},
+					"nested": {
+						nested: map[string]*Nested{
+							"str": {
+								isValue: true,
+								value:   "string2",
+							},
+							"number": {
+								isValue: true,
+								value:   2,
+							},
+							"array": {
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			b: Nested{
+				nested: map[string]*Nested{
+					"number": {
+						isValue: true,
+						value:   1.5,
+					},
+					"str": {
+						isValue: true,
+						value:   "string",
+					},
+					"array": {
+						isArray: true,
+						array: []*Nested{
+							{
+								isValue: true,
+								value:   3,
+							},
+							{
+								isValue: true,
+								value:   "string3",
+							},
+							{
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   4,
+									},
+									{
+										isValue: true,
+										value:   5,
+									},
+								},
+							},
+							{
+								nested: map[string]*Nested{
+									"number": {
+										isValue: true,
+										value:   6,
+									},
+								},
+							},
+						},
+					},
+					"nested": {
+						isValue: true,
+						value:   "DIFFERENT NESTED",
+						nested: map[string]*Nested{
+							"str": {
+								isValue: true,
+								value:   "string2",
+							},
+							"number": {
+								isValue: true,
+								value:   2,
+							},
+							"array": {
+								isArray: true,
+								array: []*Nested{
+									{
+										isValue: true,
+										value:   7,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		assert.Equal(t, test.expected, Equals(&test.a, &test.b))
+	}
+}
