@@ -126,8 +126,9 @@ func (j *Nested) Clear() error {
 	}
 
 	if j.IsArray() {
-		for _, element := range j.array {
+		for _, element := range j.array[:] {
 			element.Clear()
+			element = nil
 		}
 
 		j.isArray = false
@@ -138,6 +139,7 @@ func (j *Nested) Clear() error {
 
 	for k := range j.nested {
 		j.nested[k].Clear()
+		j.nested[k] = nil
 		delete(j.nested, k)
 	}
 
@@ -445,6 +447,7 @@ func (j *Nested) Delete(keys ...string) error {
 	}
 
 	if len(keys) == 1 {
+		j.nested[keys[0]] = nil
 		delete(j.nested, keys[0])
 		return nil
 	}
@@ -464,6 +467,7 @@ func (j *Nested) Delete(keys ...string) error {
 		return fmt.Errorf("%s: is array", strings.Join(keysWithoutLast, "."))
 	}
 
+	nested.nested[keys[len(keys)-1]] = nil
 	delete(nested.nested, keys[len(keys)-1])
 
 	return nil
@@ -754,6 +758,7 @@ func (j *Nested) ArrayDelete(f func(element *Nested) bool, keys ...string) error
 	for index := len(array) - 1; index >= 0; index-- {
 		if f(array[index]) {
 			array[index].Clear()
+			array[index] = nil
 			array = append(array[:index], array[index+1:]...)
 		}
 	}
